@@ -12,6 +12,8 @@ library(ggplot2)
 library(sp)
 require(rgdal)
 require(descr)
+source("C:/Users/Lenovo/Documents/R_source/fort.R")
+source("C:/Users/a1634565/Dropbox/Napier/R_map/GoogleHistJson/fort.R")
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 #*     Read files
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -42,6 +44,7 @@ temp <- merge(temp, un.np.2013, by="Code")
 head(temp)
 un.np.full <- temp
 rm(temp)
+un.np.full$Destination <- as.character(un.np.full$Destination)
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 #*     Select countries
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -49,5 +52,52 @@ str(un.np.full)
 un.np.cou <- un.np.full[un.np.full$Code < 900,]
 un.np.cou <- un.np.cou[complete.cases(un.np.cou),]
 un.np.cou <- un.np.cou[with(un.np.cou, order(-Total2013, -Total2010)), ]
-head(un.np.cou)
+head(un.np.cou,20)
 tail(un.np.cou)
+#* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+#*     Mapping
+#* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+map.world <- map_data(map = "world")
+str(map.world)
+# how many regions
+length(unique(map.world$region))
+#get countires names
+data.frame(unique(map.world$region))
+#change some names to match world map country names
+## China  -> China, Hong Kong Special Administrative Region
+un.np.cou$Destination[un.np.cou$Destination == "China, Hong Kong Special Administrative Region"] <- "China"
+un.np.cou$Destination[un.np.cou$Destination == "United States of America"] <- "USA"
+un.np.cou$Destination[un.np.cou$Destination == "Republic of Korea"] <- "South Korea"
+un.np.cou$Destination[un.np.cou$Destination == "Viet Nam"] <- "Vietnam"
+un.np.cou$Destination[un.np.cou$Destination == "United Kingdom of Great Britain and Northern Ireland"] <- "UK"
+names(un.np.cou) <- c("Code","region","Total1990",  "Total2000",   "Total2010",   "Total2013" )
+#* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+#*     Merge to world map
+#* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+map.mig <- merge(map.world, un.np.cou, by.x = "region", by.y="region", all.x=TRUE)
+tail(map.mig)
+tail(map.world)
+map.world2 <- map.world
+map.world2$Total2013 <- 0
+str(map.world2)
+#list of regions
+reg.list <- un.np.cou$region
+value.list <- un.np.cou$Total2013
+for (i in 1: length(reg.list)) {
+  map.world2$Total2013[map.world2$region == reg.list[i]] <- value.list[i]
+}
+
+
+fill.value()
+fill.value("China", 200)
+#map.mig <- join(map.world, un.np.cou, by)
+p <- ggplot(map.world2, aes(x = long, y = lat, group = group, fill=Total2013))
+p <- p + geom_polygon(colour = "white", size = 0.3)
+print(p)
+str(map.world2)
+unique(map.world2$Total2013)
+map.mig2 <- fortify.SpatialPolygonsDataFrame(map.mig)
+p3 <- ggplot(map.mig2, aes(x = long, y = lat, group = group, fill = "Total1990"))
+p3 <- p3 + geom_polygon() # fill areas
+p3 <- p3 + theme(legend.position="none") # remove legend with fill colours
+p3 <- p3 + labs(title = "World, filled regions")
