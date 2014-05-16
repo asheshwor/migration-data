@@ -15,7 +15,7 @@ require(descr)
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 #*     Read files
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-dataloc <- "C:/Users/a1634565/Dropbox/Napier/PhD/Post field/data/UN_MigrantStockByOriginAndDestination_2013.xls"
+dataloc <- "./data/UN_MigrantStockByOriginAndDestination_2013.xls"
 un.np.2013 <- read.xlsx(dataloc, sheetName = "Table 10", startRow = 16,
                           colIndex = c(4,154)) #read excel sheet selected columns and rows
 un.np.2010 <- read.xlsx(dataloc, sheetName = "Table 7", startRow = 16,
