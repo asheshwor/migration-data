@@ -12,6 +12,7 @@ library(ggplot2)
 library(sp)
 require(rgdal)
 require(descr)
+require(reshape2)
 #source("C:/Users/Lenovo/Documents/R_source/fort.R")
 source("C:/Users/a1634565/Dropbox/Napier/R_map/GoogleHistJson/fort.R")
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -86,86 +87,72 @@ new.list <- data.frame(
 head(new.list)
 head(map.world)
 ## fill new.list with data
-mer <- merge(new.list, map.world, by = "group")
-mer2 <- merge(mer, un.np.cou, by = "region", all.x=TRUE)
+#er <- merge(new.list, map.world, by = "group")
+mer2 <- merge(map.world, un.np.cou, by = "region", all.x=TRUE)
+head(mer2)
+mer2 <- mer2[order(mer2$order), ]
 tail(un.np.cou)
 tail(mer2)
 head(mer2[mer2$region == "Australia",])
 plot(mer2$Total2013)
 
-da <- merge(map.world, new.list,  by = "group")
-qplot(
+#melt data
+mer.melt <- melt(mer2, id.vars = c("region", "long", "lat", "order", "subregion", "Code"),
+                 measure.vars = c("Total1990", "Total2000", "Total2010", "Total2013"),
+                 value.name = "Total")
+p.90 <- qplot(
+  long, lat, data = mer.melt, group = group, 
+  fill = Total, geom = "polygon", facets=.~variable
+) + ylim(-60, 90) + facet_wrap( ~variable)
+p.00 <- qplot(
+  long, lat, data = mer2, group = group, 
+  fill = Total2000, geom = "polygon" 
+) + ylim(-60, 90)
+p.10 <- qplot(
+  long, lat, data = mer2, group = group, 
+  fill = Total2010, geom = "polygon" 
+) + ylim(-60, 90)
+mapLabel <- "United Nations, Department of Economic and Social Affairs, Population Division (2013). \n Trends in International Migrant Stock: Migrants by Destination and Origin (United Nations database, POP/DB/MIG/Stock/Rev.2013)."
+mapTitle <- "Trends in Nepali migrant stock population by destionation regions"
+noteText <- "[ Code @ https://github.com/asheshwor/R-maps/blob/master/02_great-circle-map.R ]"
+
+p.13 <- qplot(
   long, lat, data = mer2, group = group, 
   fill = Total2013, geom = "polygon" 
-) 
+) +
+  geom_polygon(aes(long,lat,group=group), 
+               size = .2, fill=NA, colour = "white",
+               data=map.world)
+p.13 <- p.13 +  ylim(-60, 85) + guides(alpha = "none") +
+  theme(
+    plot.background = element_blank()
+    ,panel.grid.major = element_blank()
+    ,panel.grid.minor = element_blank()
+    ,panel.border = element_blank()
+    ,panel.background = element_rect(fill='grey24', colour='black')
+    ,legend.position = c(.1,.3)
+    ,legend.background = element_rect(fill = "grey24", color="darkgrey")
+    ,legend.text = element_text(size = 10, colour = "mintcream")
+    ,legend.title = element_text(size = 13, colour = "mintcream")
+    ,axis.text.x  = element_blank()
+    ,axis.text.y  = element_blank()
+    ,axis.ticks  = element_blank()
+    ,axis.title  = element_blank()
+    ,axis.title  = element_blank()
+  )
+
+  geom_text(aes(x= 0, y=15, 
+                label=mapLabel),
+            color="lightgrey", size=5) +
+  geom_text(aes(x= 84, y=90, 
+                label=mapTitle),
+            color="lightgrey", size=8) +
+  geom_text(aes(x= 0, y=-60, 
+                label=noteText),
+            color="lightgrey", size=5) +
+  coord_equal()
+#plot all 4
+p.13
 
 
 
-cou.list <- unique(map.world$group)
-n <- length(cou.list)
-new.list <- data.frame( 
-  group = rep(cou.list,each=4), 
-  g1 = rep(1:2, each=2,length=4*n),
-  g2 = rep(1:2,length=4*n),
-  value = runif(4*n)
-)
-head(new.list)
-head(map.world)
-da <- merge(map.world, new.list,  by = "group")
-qplot(
-  long, lat, data = da, group = group, 
-  fill = value, geom = "polygon" 
-) + 
-  facet_wrap( ~ g1 + g2 )
-
-
-map.mig <- merge(map.world, un.np.cou, by.x = "region", by.y="region", all.x=TRUE)
-tail(map.mig)
-tail(map.world)
-map.world2 <- map.world
-map.world2$Total2013 <- 0
-str(map.world2)
-#list of regions
-reg.list <- un.np.cou$region
-value.list <- un.np.cou$Total2013
-for (i in 1: length(reg.list)) {
-  map.world2$Total2013[map.world2$region == reg.list[i]] <- value.list[i]
-}
-
-
-fill.value()
-fill.value("China", 200)
-#map.mig <- join(map.world, un.np.cou, by)
-p <- ggplot(map.world2, aes(x = long, y = lat, group = group, fill=Total2013))
-p <- p + geom_polygon(colour = "white", size = 0.3)
-print(p)
-str(map.world2)
-unique(map.world2$Total2013)
-map.mig2 <- fortify.SpatialPolygonsDataFrame(map.mig)
-p3 <- ggplot(map.mig2, aes(x = long, y = lat, group = group, fill = "Total1990"))
-p3 <- p3 + geom_polygon() # fill areas
-p3 <- p3 + theme(legend.position="none") # remove legend with fill colours
-p3 <- p3 + labs(title = "World, filled regions")
-
-#
-
-d1 <- map_data("state")
-str(d1)
-d2 <- unique(d1$group)
-n <- length(d2)
-d2 <- data.frame( 
-  group=rep(d2,each=6), 
-  g1=rep(1:3,each=2,length=6*n),
-  g2=rep(1:2,length=6*n),
-  value=runif(6*n)
-)
-head(d2)
-head(d1)
-tail(d2)
-tail(d1)
-d <- merge(d1, d2,  by="group")
-qplot(
-  long, lat, data = d, group = group, 
-  fill = value, geom = "polygon" 
-) + 
-  facet_wrap( ~ g1 + g2 )
