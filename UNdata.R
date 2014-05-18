@@ -114,7 +114,6 @@ p.10 <- qplot(
 ) + ylim(-60, 90)
 mapLabel <- "United Nations, Department of Economic and Social Affairs, Population Division (2013). \n Trends in International Migrant Stock: Migrants by Destination and Origin (United Nations database, POP/DB/MIG/Stock/Rev.2013)."
 mapTitle <- "Trends in Nepali migrant stock population by destionation regions"
-noteText <- "[ Code @ https://github.com/asheshwor/R-maps/blob/master/02_great-circle-map.R ]"
 
 p.13 <- qplot(
   long, lat, data = mer2, group = group, 
