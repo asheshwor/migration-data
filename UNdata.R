@@ -208,15 +208,15 @@ p.all <- qplot(
                        labels = comma, trans="log",
                        breaks=c(100, 500, 2000, 10000, 40000, 100000, 500000)) +
   ylim(-60, 90) + facet_wrap( ~variable, ncol=2)
-p.all + geom_path(color="darkgray", linestyle=2) +
+p.all + geom_path(color="black", linestyle=2, size=.3, alpha=0.7) +
   theme(
   plot.background = element_blank()
   ,panel.grid.major = element_blank()
   ,panel.grid.minor = element_blank()
   ,panel.border = element_blank()
   ,panel.background = element_rect(fill='skyblue1', colour='black')
-  ,legend.position = c(.0,.2)
-  ,legend.background = element_rect(fill = "skyblue1", color="darkgrey")
+  ,legend.position = c(.04,.11)
+  ,legend.background = element_rect(fill = "darkgray", color="darkgrey")
   ,legend.text = element_text(size = 10, colour = "mintcream")
   ,legend.title = element_text(size = 13, colour = "mintcream")
   ,axis.text.x  = element_blank()
