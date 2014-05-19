@@ -152,6 +152,4 @@ p.13 <- p.13 +  ylim(-60, 85) + guides(alpha = "none") +
   coord_equal()
 #plot all 4
 p.13
-
-
-
+## printing using Natural earth world map
