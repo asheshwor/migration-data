@@ -19,6 +19,9 @@ source("C:/Users/a1634565/Dropbox/Napier/R_map/GoogleHistJson/fort.R")
 #*     Read files
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 dataloc <- "./data/UN_MigrantStockByOriginAndDestination_2013.xls"
+clist <- "./data/countries.xlsx"
+countries <- read.xlsx(clist, sheetName="UN")
+tail(countries)
 un.np.2013 <- read.xlsx(dataloc, sheetName = "Table 10", startRow = 16,
                           colIndex = c(4,154)) #read excel sheet selected columns and rows
 un.np.2010 <- read.xlsx(dataloc, sheetName = "Table 7", startRow = 16,
@@ -55,6 +58,9 @@ un.np.cou <- un.np.cou[complete.cases(un.np.cou),]
 un.np.cou <- un.np.cou[with(un.np.cou, order(-Total2013, -Total2010)), ]
 head(un.np.cou,20)
 tail(un.np.cou)
+#add column on isocode for countires
+un.np.cou <- merge(un.np.cou, countries, by.x = "Destination", by.y = "COUNTRY_UN")
+head(un.np.cou)
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 #*     Mapping
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -157,7 +163,7 @@ p.13
 # read shapefile
 wmap <- readOGR(dsn="./data/world", layer="ne_10m_admin_0_countries")
 #world_adm0.dbf
-wmap <- readOGR(dsn="./data/world", layer="world_adm0")
+#wmap <- readOGR(dsn="./data/world", layer="world_adm0")
 # convert to dataframe
 wmap@data$id <- rownames(wmap@data)
 wmap.df <- fortify(wmap)
@@ -166,7 +172,7 @@ tail(wmap.df,4)
 wmap.df <- join(wmap.df, wmap@data, by = "id")
 wmap.df <- wmap.df[order(wmap.df$order), ]
 str(un.np.cou)
-wmap.df <- merge(wmap.df, un.np.cou, by.x="NAME", by.y="region", all.x=T, sort=F)
+wmap.df <- merge(wmap.df, un.np.cou, by.x="ISO_A2", by.y="ISOCODE", all.x=T, sort=F)
 wmap.df <- wmap.df[order(wmap.df$order), ]
 str(wmap.df)
 head(un.np.cou)
@@ -183,15 +189,39 @@ print(map.plot)
 #facet plot
 #melt data
 head(wmap.df)
-wmap.df <- wmap.df[c("NAME", "long", "lat", "order", "hole", "piece", "group", "id", "REGION",
-                     "Total1990", "Total2000", "Total2010", "Total2013")]
-wmap.melt <- melt(wmap.df, id.vars = c("NAME", "long", "lat", "order", "hole",
+names(wmap.df)
+wmap.df <- wmap.df[c("ISO_A2", "long", "lat", "order", "hole", "piece", "group", "id", "ADMIN",
+                     "SOVEREIGNT", "Total1990", "Total2000", "Total2010", "Total2013")]
+wmap.melt <- melt(wmap.df, id.vars = c("ISO_A2", "ADMIN", "long", "lat", "order", "hole",
                                        "piece", "group", "id"),
                  measure.vars = c("Total1990", "Total2000", "Total2010", "Total2013"),
                  value.name = "Total")
-head(wmap.melt)
+head(wmap.melt,50)
+tail(wmap.melt)
 wmap.melt <- wmap.melt[order(wmap.melt$order), ]
+#analyze numbers
+plot(wmap.melt[wmap.melt$Total < 1000000, "Total"])
 p.all <- qplot(
   long, lat, data = wmap.melt, group = group, 
   fill = Total, geom = "polygon", facets=.~variable) +
-  ylim(-60, 90) + facet_wrap( ~variable, ncol=2, scales="free")
+  scale_fill_gradient2(high ="red1", mid = "green3",
+                       labels = comma, trans="log",
+                       breaks=c(100, 500, 2000, 10000, 40000, 100000, 500000)) +
+  ylim(-60, 90) + facet_wrap( ~variable, ncol=2)
+p.all + geom_path(color="darkgray", linestyle=2) +
+  theme(
+  plot.background = element_blank()
+  ,panel.grid.major = element_blank()
+  ,panel.grid.minor = element_blank()
+  ,panel.border = element_blank()
+  ,panel.background = element_rect(fill='skyblue1', colour='black')
+  ,legend.position = c(.0,.2)
+  ,legend.background = element_rect(fill = "skyblue1", color="darkgrey")
+  ,legend.text = element_text(size = 10, colour = "mintcream")
+  ,legend.title = element_text(size = 13, colour = "mintcream")
+  ,axis.text.x  = element_blank()
+  ,axis.text.y  = element_blank()
+  ,axis.ticks  = element_blank()
+  ,axis.title  = element_blank()
+  ,axis.title  = element_blank()
+)
