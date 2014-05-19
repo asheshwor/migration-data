@@ -72,6 +72,7 @@ un.np.cou$Destination[un.np.cou$Destination == "Republic of Korea"] <- "South Ko
 un.np.cou$Destination[un.np.cou$Destination == "Viet Nam"] <- "Vietnam"
 un.np.cou$Destination[un.np.cou$Destination == "United Kingdom of Great Britain and Northern Ireland"] <- "UK"
 names(un.np.cou) <- c("Code","region","Total1990",  "Total2000",   "Total2010",   "Total2013" )
+head(un.np.cou)
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 #*     Merge to world map
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -153,3 +154,21 @@ p.13 <- p.13 +  ylim(-60, 85) + guides(alpha = "none") +
 #plot all 4
 p.13
 ## printing using Natural earth world map
+#natural earth map source
+# read shapefile
+wmap <- readOGR(dsn="./data/world", layer="ne_10m_admin_0_countries")
+# convert to dataframe
+wmap@data$id <- rownames(wmap@data)
+wmap.df <- fortify(wmap)
+head(wmap.df)
+wmap.df <- join(wmap.df, wmap@data, by = "id")
+wmap.df <- merge(wmap.df, un.np.cou, by.x="ADMIN", by.y="Destination", all.x=T, all.y=F)
+map.plot <- ggplot(data=wmap.df, aes(x=long, y=lat, group=group))
+map.plot <- map.plot + geom_polygon(aes(fill=Total2013))
+map.plot <- map.plot + geom_path(color="black", linestyle=2)
+map.plot <- map.plot + coord_equal() 
+map.plot <- map.plot  + scale_fill_gradient(low = "#ffffcc", high = "#ff4444", 
+                    space = "Lab", na.value = "grey50",
+                    guide = "colourbar")
+map.plot <- map.plot  + labs(title="Migration 2013")
+print(map.plot)
