@@ -76,7 +76,6 @@ head(un.np.cou)
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 #*     Merge to world map
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-## Prepare to mergeeeeeeeeeeeee
 cou.list <- unique(map.world$group)
 n <- length(cou.list)
 new.list <- data.frame( 
@@ -157,18 +156,42 @@ p.13
 #natural earth map source
 # read shapefile
 wmap <- readOGR(dsn="./data/world", layer="ne_10m_admin_0_countries")
+#world_adm0.dbf
+wmap <- readOGR(dsn="./data/world", layer="world_adm0")
 # convert to dataframe
 wmap@data$id <- rownames(wmap@data)
 wmap.df <- fortify(wmap)
-head(wmap.df)
+head(wmap.df,3)
+tail(wmap.df,4)
 wmap.df <- join(wmap.df, wmap@data, by = "id")
-wmap.df <- merge(wmap.df, un.np.cou, by.x="ADMIN", by.y="Destination", all.x=T, all.y=F)
+wmap.df <- wmap.df[order(wmap.df$order), ]
+str(un.np.cou)
+wmap.df <- merge(wmap.df, un.np.cou, by.x="NAME", by.y="region", all.x=T, sort=F)
+wmap.df <- wmap.df[order(wmap.df$order), ]
+str(wmap.df)
+head(un.np.cou)
 map.plot <- ggplot(data=wmap.df, aes(x=long, y=lat, group=group))
 map.plot <- map.plot + geom_polygon(aes(fill=Total2013))
-map.plot <- map.plot + geom_path(color="black", linestyle=2)
+map.plot <- map.plot + geom_path(color="gray", linestyle=2)
 map.plot <- map.plot + coord_equal() 
 map.plot <- map.plot  + scale_fill_gradient(low = "#ffffcc", high = "#ff4444", 
                     space = "Lab", na.value = "grey50",
                     guide = "colourbar")
 map.plot <- map.plot  + labs(title="Migration 2013")
 print(map.plot)
+
+#facet plot
+#melt data
+head(wmap.df)
+wmap.df <- wmap.df[c("NAME", "long", "lat", "order", "hole", "piece", "group", "id", "REGION",
+                     "Total1990", "Total2000", "Total2010", "Total2013")]
+wmap.melt <- melt(wmap.df, id.vars = c("NAME", "long", "lat", "order", "hole",
+                                       "piece", "group", "id"),
+                 measure.vars = c("Total1990", "Total2000", "Total2010", "Total2013"),
+                 value.name = "Total")
+head(wmap.melt)
+wmap.melt <- wmap.melt[order(wmap.melt$order), ]
+p.all <- qplot(
+  long, lat, data = wmap.melt, group = group, 
+  fill = Total, geom = "polygon", facets=.~variable) +
+  ylim(-60, 90) + facet_wrap( ~variable, ncol=2, scales="free")
