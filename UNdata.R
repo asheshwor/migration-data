@@ -14,7 +14,7 @@ require(rgdal)
 require(descr)
 require(reshape2)
 #source("C:/Users/Lenovo/Documents/R_source/fort.R")
-source("C:/Users/a1634565/Dropbox/Napier/R_map/GoogleHistJson/fort.R")
+#source("C:/Users/a1634565/Dropbox/Napier/R_map/GoogleHistJson/fort.R")
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 #*     Read files
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -109,7 +109,7 @@ p.all <- qplot(
                        labels = comma, trans="log",
                        breaks=c(100, 500, 2000, 10000, 40000, 100000, 500000)) +
   ylim(-60, 90) + facet_wrap( ~variable, ncol=2)
-p.all + geom_path(color="black", linestyle=2, size=.3, alpha=0.7) +
+p.all + geom_path(color="white", linestyle=2, size=.1, alpha=0.5) +
   theme(
     plot.background = element_blank()
     ,panel.grid.major = element_blank()
