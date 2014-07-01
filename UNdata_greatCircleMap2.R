@@ -86,6 +86,7 @@ readMigrationData <- function(cindex) {
 }
 adf <- readMigrationData(2)
 head(adf)
+tail(adf)
 #rm(list=ls())
 
 #collect arcs for each country
@@ -93,6 +94,7 @@ xdata <- NULL
 for (i in 1:2) {
   xdata <- rbind(xdata, readMigrationData(i))
 }
+
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 #*     Mapping
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
