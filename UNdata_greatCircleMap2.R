@@ -52,17 +52,29 @@ dataloc <- "./data/UN_MigrantStockByOriginAndDestination_2013.xls"
 clist <- "./data/countriesun.xlsx"
 countries <- read.xlsx(clist, sheetName="UN") #list of regions, two character codes and lat-long
 #function
+readMigrationTable <- function(xyear = 2013) {
+  #read data for a particular year #2013; 2010; 2008 & 1990
+  data <- read.xlsx2(dataloc, sheetName = "Table 10", startRow = 16,
+             colIndex = c(2, 4 , 10:241)) #read excel sheet selected columns and rows
+  #clean data
+  #remove regions i.e. select only countries
+  return(data)
+}
+
+data2013 <- readMigrationTable()
+head(data2013)
+names(data2013)
 #read data for country  - countryName
 readMigrationData <- function(cindex) {
   #find row for the country
   index <- cindex + 10 #first column in J
-  un.np.2013 <- read.xlsx(dataloc, sheetName = "Table 10", startRow = 16,
+  un.np.2013 <- read.xlsx2(dataloc, sheetName = "Table 10", startRow = 16,
                           colIndex = c(4,index)) #read excel sheet selected columns and rows
-  un.np.2010 <- read.xlsx(dataloc, sheetName = "Table 7", startRow = 16,
+  un.np.2010 <- read.xlsx2(dataloc, sheetName = "Table 7", startRow = 16,
                           colIndex = c(4,index)) #read excel sheet selected columns and rows
-  un.np.2000 <- read.xlsx(dataloc, sheetName = "Table 4", startRow = 16,
+  un.np.2000 <- read.xlsx2(dataloc, sheetName = "Table 4", startRow = 16,
                           colIndex = c(4,index)) #read excel sheet selected columns and rows
-  un.np.1990 <- read.xlsx(dataloc, sheetName = "Table 1", startRow = 16,
+  un.np.1990 <- read.xlsx2(dataloc, sheetName = "Table 1", startRow = 16,
                           colIndex = c(2,4,index)) #read excel sheet selected columns and rows
   names(un.np.2013) <- c("Code","Total2013")
   names(un.np.2000) <- c("Code","Total2000")
