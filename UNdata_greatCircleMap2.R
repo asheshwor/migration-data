@@ -100,9 +100,11 @@ for (i in 1:2) {
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 #the origin point of the lines
 p1 <- c(84.12, 28.39) #center of Nepal, sort of
+countries <- adf
 head(countries)
 head(un.np.cou)
-loc.geo <- data.frame(lon = as.numeric(un.np.cou$LON), lat = as.numeric(un.np.cou$LAT))
+#loc.geo <- data.frame(lon = as.numeric(un.np.cou$LON), lat = as.numeric(un.np.cou$LAT))
+loc.geo <- data.frame(lon = as.numeric(adf$LON), lat = as.numeric(adf$LAT))
 #define colours
 #couleur1 <- brewer.pal(12, "Paired")
 couleur <- brewer.pal(9, "PuRd")
@@ -115,8 +117,8 @@ cgc <- gcIntermediate(p1, loc.geo, 100, breakAtDateLine=FALSE, addStartEnd=TRUE,
 cgc.ff <- fortify.SpatialLinesDataFrame(cgc)
 #data frame for id
 loc.geo.df <- data.frame(loc.geo) # debug alert
-loc.geo.df$location <- un.np.cou$ISOCODE
-loc.geo.df$total <- un.np.cou$Total2013
+loc.geo.df$location <- adf$ISOCODE
+loc.geo.df$total <- adf$Total2013
 loc.geo.df$id <- as.character(c(1:nrow(loc.geo.df))) #making id character
 names(loc.geo.df) <- c("lon.old", "lat.old", "location", "total", "id")
 cgc.ffm <- merge(cgc.ff, loc.geo.df, all.x=T, by="id")
