@@ -114,10 +114,23 @@ m2013 <- m2013[!is.nan(m2013$STOCK),]
 #map
 library(maps)
 library(geosphere)
-map("world", col="#f2f2f2", fill=TRUE, bg="white", lwd=0.05)
+tail(m2013)
+pal <- colorRampPalette(c("red", "green"))
+colors <- pal(232)
+map("world", col="darkgrey", fill=TRUE, bg="black", lwd=0.05)
+for (i in 1:length(m2013$newname)) {
+  sourceName <- m2013$variable[i]
+  destinationName <- m2013$ISOCODE[i]
+  lonSource <- countries[countries$ISOCODE == sourceName, "LON"]
+  latSource <- countries[countries$ISOCODE == sourceName, "LAT"]
+  lonDest <- countries[countries$ISOCODE == destinationName, "LON"]
+  latDest <- countries[countries$ISOCODE == destinationName, "LAT"]
+  gcl <- gcIntermediate(c(lonSource, latSource), c(lonDest, latDest), n=20, addStartEnd=TRUE)
+  colindex <- which(countries$ISOCODE == sourceName)
+  lines(gcl, col=colindex, lwd=0.05)
+}
+#try ggplot2
 
-gcl <- gcIntermediate(c(lonSource, latSource), c(lonDest, latDest), n=20, addStartEnd=TRUE)
-lines(gcl)
 
 
 #read data for country  - countryName
