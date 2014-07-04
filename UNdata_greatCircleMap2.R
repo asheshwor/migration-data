@@ -68,6 +68,8 @@ readMigrationTable <- function(xyear = 2013) {
 data2013 <- readMigrationTable()
 head(data2013)
 names(data2013)
+str(data2013)
+data2013 <- data2013[data2013$Country.code < 900,] #isolate countries only
 head(countries); tail(countries)
 str(countries)
 countries$newname <- chartr("'", " ", countries$COUNTRY_UN)
@@ -92,6 +94,31 @@ getCountryCode <- function(xcountry="Nepal") {
 #out <- getCountryCode("UnitedStatesVirginIslands") #returns VI
 newnames2 <- sapply(newnames, getCountryCode)
 newnames2[is.na(newnames2)] <- oldnames[is.na(newnames2)] #works till here :)
+names(data2013) <- newnames2
+data2013$newname <- chartr("'", " ", data2013[,1])
+data2013$newname <- chartr("(", " ", data2013$newname)
+data2013$newname <- chartr(")", " ", data2013$newname)
+data2013$newname <- chartr("-", " ", data2013$newname)
+data2013$newname <- gsub("\\s","", chartr(",", " ", data2013$newname))
+data2013$ISOCODE <- sapply(data2013$newname, getCountryCode)
+tail(data2013,4)
+#melt data
+require(reshape2)
+data2013.sub <- data2013[,c(-1,-2)]
+head(data2013.sub)
+m2013 <- melt(data2013.sub, id.vars = c("newname", "ISOCODE"),
+              measure.vars = names(data2013)[3:234],
+              value.name = "STOCK")
+head(m2013)
+m2013 <- m2013[!is.nan(m2013$STOCK),]
+#map
+library(maps)
+library(geosphere)
+map("world", col="#f2f2f2", fill=TRUE, bg="white", lwd=0.05)
+
+gcl <- gcIntermediate(c(lonSource, latSource), c(lonDest, latDest), n=20, addStartEnd=TRUE)
+lines(gcl)
+
 
 #read data for country  - countryName
 readMigrationData <- function(cindex) {
