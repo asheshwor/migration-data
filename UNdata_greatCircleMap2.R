@@ -58,12 +58,26 @@ readMigrationTable <- function(xyear = 2013) {
              colIndex = c(2, 4 , 10:241)) #read excel sheet selected columns and rows
   #clean data
   #remove regions i.e. select only countries
+  
   return(data)
 }
 
 data2013 <- readMigrationTable()
 head(data2013)
 names(data2013)
+head(countries); tail(countries)
+countries$newname <- gsub("\\s","", chartr(",", " ", countries$COUNTRY_UN))
+#convert col names to country ISCOCODEs
+oldnames <- names(data2013)
+newnames <- chartr(".", " ", oldnames) #replace . with space
+newnames <- gsub("\\s","", newnames) #final names to match
+
+
+# x <- "http://stat.umn.edu:80/xyz"
+# m <- regexec("^(([^:]+)://)?([^:/]+)(:([0-9]+))?(/.*)", x)
+# m
+# regmatches(x, m)
+newnames
 #read data for country  - countryName
 readMigrationData <- function(cindex) {
   #find row for the country
