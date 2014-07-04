@@ -50,7 +50,11 @@ ClosePolygons <- function(df, longcol, ordercol){
 #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 dataloc <- "./data/UN_MigrantStockByOriginAndDestination_2013.xls"
 clist <- "./data/countriesun.xlsx"
-countries <- read.xlsx(clist, sheetName="UN") #list of regions, two character codes and lat-long
+countries <- read.xlsx2(clist, sheetName="UN",
+                        colClasses=c("character",
+                                     "character",
+                                     "numeric",
+                                     "numeric")) #list of regions, two character codes and lat-long
 #function
 readMigrationTable <- function(xyear = 2013) {
   #read data for a particular year #2013; 2010; 2008 & 1990
@@ -61,23 +65,34 @@ readMigrationTable <- function(xyear = 2013) {
   
   return(data)
 }
-
 data2013 <- readMigrationTable()
 head(data2013)
 names(data2013)
 head(countries); tail(countries)
-countries$newname <- gsub("\\s","", chartr(",", " ", countries$COUNTRY_UN))
+str(countries)
+countries$newname <- chartr("'", " ", countries$COUNTRY_UN)
+countries$newname <- chartr("(", " ", countries$newname)
+countries$newname <- chartr(")", " ", countries$newname)
+countries$newname <- chartr("-", " ", countries$newname)
+countries$newname <- gsub("\\s","", chartr(",", " ", countries$newname))
 #convert col names to country ISCOCODEs
 oldnames <- names(data2013)
 newnames <- chartr(".", " ", oldnames) #replace . with space
 newnames <- gsub("\\s","", newnames) #final names to match
+countries$ISOCODE <- as.character(countries$ISOCODE)
+#match with country codes
+getCountryCode <- function(xcountry="Nepal") {
+  code <- countries[countries$newname == xcountry,c("ISOCODE")]
+  if (is.na(code[1])) {
+    return(NA)
+  } else {
+    return(as.character(code[1]))
+  }
+}
+#out <- getCountryCode("UnitedStatesVirginIslands") #returns VI
+newnames2 <- sapply(newnames, getCountryCode)
+newnames2[is.na(newnames2)] <- oldnames[is.na(newnames2)] #works till here :)
 
-
-# x <- "http://stat.umn.edu:80/xyz"
-# m <- regexec("^(([^:]+)://)?([^:/]+)(:([0-9]+))?(/.*)", x)
-# m
-# regmatches(x, m)
-newnames
 #read data for country  - countryName
 readMigrationData <- function(cindex) {
   #find row for the country
