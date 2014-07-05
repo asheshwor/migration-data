@@ -115,9 +115,32 @@ m2013 <- m2013[!is.nan(m2013$STOCK),]
 library(maps)
 library(geosphere)
 tail(m2013)
+m2013 <- m2013[order(m2013$STOCK),]
 pal <- colorRampPalette(c("red", "green"))
 colors <- pal(232)
-map("world", col="darkgrey", fill=TRUE, bg="black", lwd=0.05)
+plotStock <- function(country="NP") {
+  data <- m2013[m2013$variable == country,]
+  data <- data[order(data$STOCK),]
+  #map("world", col="#191919", fill=TRUE, bg="#000000", lwd=0.05)
+  for (i in 1:length(data$newname)) {
+    sourceName <- data$variable[i]
+    destinationName <- data$ISOCODE[i]
+    lonSource <- countries[countries$ISOCODE == sourceName, "LON"]
+    latSource <- countries[countries$ISOCODE == sourceName, "LAT"]
+    lonDest <- countries[countries$ISOCODE == destinationName, "LON"]
+    latDest <- countries[countries$ISOCODE == destinationName, "LAT"]
+    gcl <- gcIntermediate(c(lonSource, latSource), c(lonDest, latDest),
+                          n=20, breakAtDateLine=FALSE,
+                          addStartEnd=TRUE)
+    #colindex <- which(countries$ISOCODE == sourceName)
+    #lines(gcl, col=colors[colindex], lwd=0.01)
+    return(gcl)
+  }
+}
+plotStock()
+plotStock("IN")
+plotStock("AU")
+map("world", col="#191919", fill=TRUE, bg="#000000", lwd=0.05)
 for (i in 1:length(m2013$newname)) {
   sourceName <- m2013$variable[i]
   destinationName <- m2013$ISOCODE[i]
@@ -125,9 +148,11 @@ for (i in 1:length(m2013$newname)) {
   latSource <- countries[countries$ISOCODE == sourceName, "LAT"]
   lonDest <- countries[countries$ISOCODE == destinationName, "LON"]
   latDest <- countries[countries$ISOCODE == destinationName, "LAT"]
-  gcl <- gcIntermediate(c(lonSource, latSource), c(lonDest, latDest), n=20, addStartEnd=TRUE)
+  gcl <- gcIntermediate(c(lonSource, latSource), c(lonDest, latDest),
+                        n=20, breakAtDateLine=FALSE,
+                        addStartEnd=TRUE)
   colindex <- which(countries$ISOCODE == sourceName)
-  lines(gcl, col=colindex, lwd=0.05)
+  lines(gcl, col=colors[colindex], lwd=0.01)
 }
 #try ggplot2
 
