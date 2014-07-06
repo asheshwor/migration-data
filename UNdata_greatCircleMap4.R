@@ -7,7 +7,7 @@ library(geosphere)
 require(xlsx) #only if excel file is to be read
 library(RColorBrewer)
 require(scales)
-library(plyr)  
+require(plyr)  
 library(ggplot2)
 library(sp)
 require(rgdal)
@@ -76,7 +76,7 @@ data2013$newname <- chartr(")", " ", data2013$newname)
 data2013$newname <- chartr("-", " ", data2013$newname)
 data2013$newname <- gsub("\\s","", chartr(",", " ", data2013$newname))
 data2013$ISOCODE <- sapply(data2013$newname, getCountryCode)
-tail(data2013,4)
+# tail(data2013,4)
 #melt data
 data2013.sub <- data2013[,c(-1,-2)]
 # head(data2013.sub)
@@ -92,16 +92,22 @@ m2013 <- m2013[!is.na(m2013$STOCK),]
 # str(m2013)
 #force numeric
 m2013$STOCK <- as.numeric(m2013$STOCK)
-hist(log(m2013$STOCK), breaks=6) #8 bars
+# m2013 <- m2013[m2013$STOCK > 0,]
+#hist(log(m2013$STOCK), breaks=6) #8 bars
 #map
-m2013.merged <- merge(m2013, countries, by="ISOCODE", all.x=TRUE)
+m2013.merged <- merge(m2013, countries, by="ISOCODE", all.x=FALSE)
 m2013.merged <- merge(m2013.merged, countries, by.x="variable", by.y="ISOCODE", all.x=TRUE)
 m2013.merged <- m2013.merged[,c(1,2,4,6,7,10,11)]
 names(m2013.merged) <- c("source", "destination", "stock", "lat.d", "lon.d", "lat.s", "lon.s")
-head(m2013.merged); tail(m2013.merged)
-hist(m2013.merged$stock)
-plot(m2013.merged$stocklog)
-m2013.merged$stocklog <- log(m2013.merged$stock)/500 + 0.03
+# head(m2013.merged); tail(m2013.merged)
+# hist(m2013.merged$stock)
+# plot(m2013.merged$stocklog)
+#m2013.merged <- m2013.merged[m2013.merged$stock > 0,]
+m2013.merged$stocklog <- log(m2013.merged$stock)
+#order less important first
+#m2013.merged <- m2013.merged[order(m2013.merged$stock, decreasing=FALSE),]
+
+
 #collect great circles
 geosource <- data.frame(lon=m2013.merged$lon.s, lat=m2013.merged$lat.s)
 geodestination <- data.frame(lon=m2013.merged$lon.d, lat=m2013.merged$lat.d)
@@ -116,30 +122,20 @@ cgc <- gcIntermediate(geosource[selection,], geodestination[selection,], 100,
 #min(geosource$lon); min(geosource$lat);min(geodestination$lon); min(geodestination$lat);
 #geosource[2570:2580,];geodestination[2570:2580,]
 cgc.ff <- fortify.SpatialLinesDataFrame(cgc)
-head(cgc.ff)
+head(cgc.ff); tail(cgc.ff)
 #data frame for ID
 geo.df <- m2013.merged
 geo.df$id <- as.character(c(1:nrow(geo.df)))
 # head(geo.df)
 cgc.ffm <- merge(cgc.ff, geo.df, all.x=TRUE, by="id")
+#cgc.ff.r <- ddply(cgc.ffm, .(id), RegroupElements, "lon.r", "id")
 ##ggplot2
-mapLabel <- "Migrant stock data from United Nations, Department of Economic and Social Affairs (2013). Trends in International Migrant Stock: Migrants by Destination and Origin (United Nations database, POP/DB/MIG/Stock/Rev.2013)"
-mapTitle <- "Migration network"
-noteText <- "Source code https://github.com/asheshwor/migration-data"
-#png(file="tourmap.png", 1280, 720)
-couleur <- brewer.pal(9, "PuRd")
+##prepare background
 # read world shapefile from natural earth
 wmap <- readOGR(dsn="U:/R/Map/110m_cultural", layer="ne_110m_admin_0_countries")
 # convert to dataframe
 wmap_df <- fortify(wmap)
-#get position of cities from http://www.geonames.org/export/ database
-places <- read.delim("U:/R/Map/cities1000.txt", header=FALSE, sep="\t")
-##get position of cities from naturalearth.com cities database 10m
-places2 <- readOGR(dsn="U:/R/Map/10m_populated_places", layer="ne_10m_populated_places")
-# convert to dataframe
-places2.df <- data.frame(lon=places2$LONGITUDE, lat = places2$LATITUDE)
-places.df <- data.frame (places$V6, places$V5)
-names(places.df) <- c('lon', "lat")
+
 # tail(cgc.ffm)
 # plot(cgc.ffm$stocklog)
 # hist(cgc.ffm$stocklog)
@@ -149,7 +145,8 @@ names(places.df) <- c('lon', "lat")
 # min(cgc.ffm$stocklog)
 # head(cgc.ffm[cgc.ffm$stocklog == -Inf,])
 # str(cgc.ffm)
-cgc.ffm <- cgc.ffm[cgc.ffm$stock > 0,]
+#cgc.ffm <- cgc.ffm[cgc.ffm$stock > 0,]
+cgc.ffm <- within(cgc.ffm, stocklog[stocklog == -Inf] <- 0)
 #cut
 cgc.ffm$stockcut <- cut(cgc.ffm$stocklog, breaks=9, labels=FALSE,
                         ordered_result = TRUE)
@@ -158,8 +155,9 @@ cgc.ffm$stockcut <- cut(cgc.ffm$stocklog, breaks=9, labels=FALSE,
 #cgc.ffm$alpha <- 0.01 + cgc.ffm$stockcut/500
 #hist(cgc.ffm$alpha)
 #head(cgc.ffm)
+tail(cgc.ffm)
 #cgc.ffm[c(1000,500,25,36,10000),]
-cgc.ffm <- cgc.ffm[order(-cgc.ffm$stockcut),]
+#cgc.ffm <- cgc.ffm[order(cgc.ffm$stock, decreasing=FALSE),]
 # 
 # cgc.ffm2 <- cgc.ffm[1:50000,]
 # cgc.ffm2 <- cgc.ffm2[order(cgc.ffm2$stockcut),]
@@ -172,7 +170,7 @@ couleur <- rev(brewer.pal(9,"Blues")) #1 is dark(blue); 9 is light(white)
 cgc.ffm$stockcut <- factor(cgc.ffm$stockcut)
 names(couleur) <- levels(cgc.ffm$stockcut)
 colScale <- scale_colour_manual(name = "stockcut", values = couleur)
-unique(cgc.ffm$stockcut)
+# unique(cgc.ffm$stockcut)
 
 
 
@@ -189,8 +187,8 @@ ggplot() +
                data=wmap_df, alpha=0.3) + #country boundary
   #colindex <- round( (fsub[j,]$cnt / maxcnt) * length(colors) )
   geom_line(aes(long, lat, group=group, col=stockcut),
-            data=cgc.ffm[(cgc.ffm$destination=="US") & (cgc.ffm$source=="MX"),],
-            alpha = .5, size=0.1) + #drawing great circle lines
+            data=cgc.ffm,
+            alpha = .05, size=0.1) + #drawing great circle lines
   #   geom_line(aes(lon.r,lat, color=total, 
   #                 #alpha=total,
   #                 alpha=0.8,
