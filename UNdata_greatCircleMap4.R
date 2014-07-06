@@ -171,24 +171,36 @@ cgc.ffm$stockcut <- factor(cgc.ffm$stockcut)
 names(couleur) <- levels(cgc.ffm$stockcut)
 colScale <- scale_colour_manual(name = "stockcut", values = couleur)
 # unique(cgc.ffm$stockcut)
-
-
+#Add places
+#get position of cities from http://www.geonames.org/export/ database
+places <- read.delim("U:/R/Map/cities1000_old.txt", header=FALSE, sep="\t")
+head(places)
+##get position of cities from naturalearth.com cities database 10m
+places2 <- readOGR(dsn="U:/R/Map/10m_populated_places", layer="ne_10m_populated_places")
+# convert to dataframe
+places2.df <- data.frame(lon=places2$LONGITUDE, lat = places2$LATITUDE)
+#only keep V5 and V6 columns i.e. lat and lon
+places.df <- data.frame (places$V6, places$V5, places$V9)
+names(places.df) <- c('lon', "lat", "code")
+head(places.df)
+tail(places.df)
+unique(places.df$code)
 
 ggplot() +
   geom_polygon(aes(long,lat,group=group), 
                size = 0.2, fill="grey4", colour = NA,
                data=wmap_df) + #landmass backdrop
-  #   geom_point(aes(lon, lat), col=couleur[2], size=0.5,
-  #              alpha=0.01, data=places2.df) + #natural earth cities as backdrop
-  #   geom_point(aes(lon, lat), col=couleur[2], size=0.2,
-  #              alpha=0.01, data=places.df) + #geonames.org cities as backdrop
+    geom_point(aes(lon, lat), col="green", size=1,
+               alpha=0.01, data=places2.df) + #natural earth cities as backdrop
+    geom_point(aes(lon, lat), col="white", size=0.2,
+               alpha=0.05, data=places.df) + #geonames.org cities as backdrop
   geom_polygon(aes(long,lat,group=group), 
                size = 0.1, fill=NA, colour = "slategrey",
                data=wmap_df, alpha=0.3) + #country boundary
   #colindex <- round( (fsub[j,]$cnt / maxcnt) * length(colors) )
-  geom_line(aes(long, lat, group=group, col=stockcut),
-            data=cgc.ffm,
-            alpha = .05, size=0.1) + #drawing great circle lines
+#   geom_line(aes(long, lat, group=group, col=stockcut),
+#             data=cgc.ffm,
+#             alpha = .05, size=0.1) + #drawing great circle lines
   #   geom_line(aes(lon.r,lat, color=total, 
   #                 #alpha=total,
   #                 alpha=0.8,
@@ -196,7 +208,7 @@ ggplot() +
   #             #col=couleur[6],
   #             size=1.1, data= cgc.ff.r) + #great circle lines overlay
   #scale_colour_gradient(high="white", low="blue") +
-  colScale +
+#   colScale +
   guides(alpha = "none") +
   theme(
     plot.background = element_blank()
