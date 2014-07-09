@@ -14,7 +14,7 @@ For mapping, world map shape file from NaturalEarth.com ne_10m_admin_0_countries
 
 ## Example
 
-![R plot](Plots/migration2013.jpg.jpg)
+![R plot](plots/migration2013.jpg.jpg)
 
 ## References
 
