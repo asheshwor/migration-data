@@ -1,7 +1,7 @@
 Reading UN migration data in R
 =========
 
-This library is designed to read migration datasets from United Nations, Department of Economic and Social Affairs site. Right now, I'm writing functions to extract data specific to Nepal but I hope to generalize as I go along.
+This library is designed to read and visualise migration datasets from United Nations, Department of Economic and Social Affairs site.
 
 ## Description of data
 
@@ -11,6 +11,10 @@ The data from stock migration is from the United Nations, Department of Economic
 For mapping, world map shape file from NaturalEarth.com ne_10m_admin_0_countries layer is used. A table of countries and regions and their appropriate two character codes was made using data from https://developers.google.com/public-data/docs/canonical/countries_csv with a few additions.
 
 ## Functions
+
+## Example
+
+![R plot](Plots/migration2013.jpg.jpg)
 
 ## References
 

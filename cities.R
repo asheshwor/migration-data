@@ -10,4 +10,6 @@ head(places.df)
 tail(places.df)
 places.df[sample(1:nrow(places.df), 10),]
 unique(places.df$code)
-?sample
+head(m2013.merged)
+summary(m2013.merged)
+sum(m2013.merged$stock) #225,012,650
