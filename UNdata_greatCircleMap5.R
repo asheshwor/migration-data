@@ -99,10 +99,7 @@ m2013.merged <- merge(m2013, countries, by="ISOCODE", all.x=FALSE)
 m2013.merged <- merge(m2013.merged, countries, by.x="variable", by.y="ISOCODE", all.x=TRUE)
 m2013.merged <- m2013.merged[,c(1,2,4,6,7,10,11)]
 names(m2013.merged) <- c("source", "destination", "stock", "lat.d", "lon.d", "lat.s", "lon.s")
-# head(m2013.merged); tail(m2013.merged)
-# hist(m2013.merged$stock)
-# plot(m2013.merged$stocklog)
-#m2013.merged <- m2013.merged[m2013.merged$stock > 0,]
+
 m2013.merged$stocklog <- log(m2013.merged$stock)
 #order less important first
 #m2013.merged <- m2013.merged[order(m2013.merged$stock, decreasing=FALSE),]
